@@ -51,7 +51,7 @@ for i = 1:size(workspace, 1)
         theta4_deg = atan2d(-top_offset_m, left_offset_m);
 
         % Iterate through each angle
-        current_tension_N = 0;
+        current_tension_N = inf;
         tension_delta = 1000;
         for theta = 1:360
             accel_x_ms2 = a_max_ms2 * cosd(theta);
@@ -59,9 +59,8 @@ for i = 1:size(workspace, 1)
             force_x_N = m_endeffector_kg * accel_x_ms2;
             force_y_N = m_endeffector_kg * (accel_y_ms2 - 9.81);
 
-            W = -[cosd(theta1_deg), cosd(theta2_deg), cosd(theta3_deg), cosd(theta4_deg); sind(theta1_deg), sind(theta2_deg), sind(theta3_deg), sind(theta4_deg)];
+            W = -[cosd(theta1_deg), cosd(theta2_deg), cosd(theta3_), cosd(theta_4); sind(theta_1), sind(theta_2), sind(theta_3), sind(theta_4)];
             tensions_N = forceSolver(force_x_N, force_y_N, W, 0.6 / kR);
-            current_tension_N = max([current_tension_N, max(tensions_N)]);
         end
         workspace(i, j) = current_tension_N;
     end
@@ -69,14 +68,14 @@ end
 
 function [out] = forceSolver(Fx, Fy, W, midTension)
     WT = W';    
-    tm = [midTension; midTension; midTension; midTension];
+    tm = [midTension, midTension, midTension, midTension];
     Wtm = W * tm;
     Fx = Fx - Wtm(1);
     Fy = Fy - Wtm(2);
     
     WWT = W * WT;
     WWTinv = pinv(WWT);
-    fWtm = [Fx; Fy];
+    fWtm = [Fx, Fy];
     intermediate = WWTinv * fWtm;
     intermediate2 = WT * intermediate;
     out = tm + intermediate2;
