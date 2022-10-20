@@ -7,7 +7,8 @@ clear; clc; close all; clearvars all;
 m_endeffector_kg = 8;
 v_max_ms = 2;
 a_max_ms2 = 5;
-kR = 0.0254 / 2;
+spool_radius_in = 1.5;
+kR = spool_radius_in * 0.0254 / 2; % winch radius (meters)
 
 % Frame Dimensions
 frame_length_ft = 32.8;
@@ -57,15 +58,28 @@ for i = 1:size(workspace, 1)
             accel_x_ms2 = a_max_ms2 * cosd(theta);
             accel_y_ms2 = a_max_ms2 * sind(theta);
             force_x_N = m_endeffector_kg * accel_x_ms2;
-            force_y_N = m_endeffector_kg * (accel_y_ms2 - 9.81);
+            force_y_N = m_endeffector_kg * (accel_y_ms2 + 9.81);
 
-            W = -[cosd(theta1_deg), cosd(theta2_deg), cosd(theta3_deg), cosd(theta4_deg); sind(theta1_deg), sind(theta2_deg), sind(theta3_deg), sind(theta4_deg)];
-            tensions_N = forceSolver(force_x_N, force_y_N, W, 0.6 / kR);
+            W = [cosd(theta1_deg), cosd(theta2_deg), cosd(theta3_deg), cosd(theta4_deg); sind(theta1_deg), sind(theta2_deg), sind(theta3_deg), sind(theta4_deg)];
+            % min_tension = 0.1 / kR
+            % max_tension = 1.1 / kR
+            tensions_N = forceSolver(force_x_N, force_y_N, W, 0.6 / kR); % (min tension + max tension) / 2
             current_tension_N = max([current_tension_N, max(tensions_N)]);
         end
         workspace(i, j) = current_tension_N;
     end
 end
+%% Plot Figures
+figure;
+surf(workspace);
+
+figure;
+image(workspace);
+colorMap = jet(140);
+colormap(colorMap);
+colorbar;
+
+%% Functions
 
 function [out] = forceSolver(Fx, Fy, W, midTension)
     WT = W';    
