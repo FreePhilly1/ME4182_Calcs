@@ -32,10 +32,8 @@ force_weight_N = 9.81 * [0, -m_endeffector_kg];
 
 % Create Workspace
 workspace = zeros(int64(frame_height_m), int64(frame_length_m));
-
-% Vibration Analysis Parameters
 vibration_distance = 0;
-F_dist_N = 5;
+F
 
 % Iterate through each section of workspace and determine max tension
 for i = 1:size(workspace, 1)
@@ -69,9 +67,7 @@ for i = 1:size(workspace, 1)
             % min_tension = 0.1 / kR
             % max_tension = 1.1 / kR
             tensions_N = forceSolver(force_x_N, force_y_N, W, 0.6 / kR); % (min tension + max tension) / 2
-            rope_length_m = [sqrt(bottom_offset_m^2 + left_offset_m^2); sqrt(bottom_offset_m^2 + right_offset_m^2); sqrt(top_offset_m^2 + right_offset_m^2); sqrt(top_offset_m^2 + left_offset_m^2)];
-            current_disturbance_m = F_dist_N / sum(tensions_N./rope_length_m);
-            vibration_distance = max(vibration_distance, current_disturbance_m);
+            rope_length_m = [];
             current_tension_N = max([current_tension_N, max(tensions_N)]);
         end
         workspace(i, j) = current_tension_N;
@@ -83,7 +79,7 @@ surf(workspace);
 
 figure;
 image(workspace);
-colorMap = jet(round(max(max(workspace))));
+colorMap = jet(140);
 colormap(colorMap);
 colorbar;
 
